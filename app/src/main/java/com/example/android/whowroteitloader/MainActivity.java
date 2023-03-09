@@ -19,13 +19,8 @@ package com.example.android.whowroteitloader;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.annotation.RestrictTo;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.Loader;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -34,12 +29,6 @@ import android.widget.TextView;
 
 import com.example.android.whowroteitloader.bean.Book;
 import com.google.gson.Gson;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.IOException;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -111,8 +100,32 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onResponse(Call<Book> call, Response<Book> response) {
                     Book book = response.body();
-                    mAuthorText.setText(book.items.get(0).volumeInfo.authors.get(0));
-                    mTitleText.setText(book.items.get(0).volumeInfo.title);
+                    // Initialize iterator and results fields.
+                    int i = 0;
+                    String title = null;
+                    String authors = null;
+
+                    while (i < book.items.size() &&
+                            (authors == null && title == null)) {
+                        title = book.items.get(i).volumeInfo.title;
+                        if (book.items.get(i).volumeInfo.authors != null) {
+                            authors = String.join(", ", book.items.get(i).volumeInfo.authors);
+
+                        }
+                        // Move to the next item.
+                        i++;
+                    }
+
+                    // If both are found, display the result.
+                    if (title != null && authors != null) {
+                        mTitleText.setText(title);
+                        mAuthorText.setText(authors);
+                        //mBookInput.setText("");
+                    } else {
+                        // If none are found, update the UI to show failed results.
+                        mTitleText.setText(R.string.no_results);
+                        mAuthorText.setText("");
+                    }
                 }
 
                 @Override
